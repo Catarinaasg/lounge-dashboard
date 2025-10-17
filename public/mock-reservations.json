@@ -1,22 +1,22 @@
 [
   {
-    "licensePlate": "AA-11-BB",
-    "startTime": "2025-10-17T15:00:00Z",
-    "endTime": "2025-10-17T15:45:00Z",
-    "remark": "Lane 2",
+    "licensePlate": "7GTQ623",
+    "startTime": "2025-10-17T09:00:00Z",
+    "endTime": "2025-10-17T11:00:00Z",
+    "remark": "2",
     "soc": 45
   },
   {
-    "licensePlate": "CC-22-DD",
-    "startTime": "2025-10-17T16:00:00Z",
-    "endTime": "2025-10-17T16:30:00Z",
+    "licensePlate": "1IRY493",
+    "startTime": "2025-10-17T09:15:00Z",
+    "endTime": "2025-10-17T11:45:00Z",
     "remark": "Lane 1 at 16:10",
     "soc": 62
   },
   {
-    "licensePlate": "EE-33-FF",
-    "startTime": "2025-10-17T17:00:00Z",
-    "endTime": "2025-10-17T17:45:00Z",
+    "licensePlate": "1FAF587",
+    "startTime": "2025-10-17T10:00:00Z",
+    "endTime": "2025-10-17T18:00:00Z",
     "remark": "Lane 3",
     "soc": 30
   }
