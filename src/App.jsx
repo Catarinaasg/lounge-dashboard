@@ -6,6 +6,7 @@ export default function LoungeDashboard() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const API_URL = import.meta.env.VITE_API_URL || "/mock-reservations.json";
 
+  // Fetch reservations from API
   async function fetchData() {
     try {
       const res = await fetch(API_URL, { cache: "no-store" });
@@ -21,12 +22,14 @@ export default function LoungeDashboard() {
     }
   }
 
+  // Refresh data every 30 seconds
   useEffect(() => {
     fetchData();
     const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
   }, []);
 
+  // Update live clock every second
   useEffect(() => {
     const clockInterval = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(clockInterval);
@@ -39,11 +42,17 @@ export default function LoungeDashboard() {
   return (
     <div className="min-h-screen text-white flex flex-col p-8" style={{ backgroundColor: "#0D291A" }}>
       {/* Header with logo and clock */}
-      <header className="flex items-center justify-between mb-8">
-        <div className="flex items-center">
-          <img src="/logo.png" alt="Company Logo" className="h-8 w-auto mr-4" />
-          {/* Optional: small text or slogan */}
+      <header className="flex items-start justify-between mb-8">
+        {/* Logo on the left */}
+        <div className="flex items-start">
+          <img
+            src="/logo.png"
+            alt="Greenlane Logo"
+            className="h-8 w-auto mt-1" // smaller logo, top-aligned
+          />
         </div>
+
+        {/* Clock and Last Updated */}
         <div className="text-right">
           <div className="text-sm text-gray-300">Current Time</div>
           <div className="text-lg font-mono">{currentTime.toLocaleTimeString()}</div>
@@ -53,7 +62,7 @@ export default function LoungeDashboard() {
       </header>
 
       {/* Reservations title */}
-      <h2 className="text-3xl font-bold mb-4">Reservations</h2>
+      <h2 className="text-3xl font-bold mb-6">Reservations</h2> {/* Increased margin */}
 
       {/* Table */}
       {sorted.length > 0 ? (
@@ -61,11 +70,11 @@ export default function LoungeDashboard() {
           <table className="min-w-full border-collapse table-auto text-center text-white">
             <thead>
               <tr className="border-b border-gray-700">
-                <th className="px-6 py-3">Vehicle</th>
-                <th className="px-6 py-3">Start</th>
-                <th className="px-6 py-3">End</th>
+                <th className="px-6 py-3">License Plate</th>
+                <th className="px-6 py-3">Start Time</th>
+                <th className="px-6 py-3">End Time</th>
                 <th className="px-6 py-3">Lane</th>
-                <th className="px-6 py-3">Remark</th>
+                <th className="px-6 py-3">Remarks</th>
                 <th className="px-6 py-3">SOC</th>
               </tr>
             </thead>
@@ -73,12 +82,24 @@ export default function LoungeDashboard() {
               {sorted.map((r, i) => {
                 // Alternating row colors
                 const bgColor = i % 2 === 0 ? "#0D291A" : "#02CC02";
-                const textColor = i % 2 === 0 ? "text-white" : "text-white"; // ensures good contrast
+                const textColor = "text-white"; // ensures contrast
                 return (
-                  <tr key={i} style={{ backgroundColor: bgColor }} className={`${textColor} border-b border-gray-700`}>
+                  <tr
+                    key={i}
+                    style={{ backgroundColor: bgColor }}
+                    className={`${textColor} border-b border-gray-700`}
+                  >
                     <td className="px-6 py-4 font-bold text-xl">{r.licensePlate || "—"}</td>
-                    <td className="px-6 py-4">{r.startTime ? new Date(r.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}</td>
-                    <td className="px-6 py-4">{r.endTime ? new Date(r.endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}</td>
+                    <td className="px-6 py-4">
+                      {r.startTime
+                        ? new Date(r.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                        : "—"}
+                    </td>
+                    <td className="px-6 py-4">
+                      {r.endTime
+                        ? new Date(r.endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                        : "—"}
+                    </td>
                     <td className="px-6 py-4 font-medium">{r.lane || "—"}</td>
                     <td className="px-6 py-4">{r.remark || "—"}</td>
                     <td className="px-6 py-4 font-bold">{r.soc ?? "—"}%</td>
