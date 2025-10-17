@@ -62,14 +62,20 @@ export default function LoungeDashboard() {
       </header>
 
       {/* Reservations title */}
-      <h2 className="text-3xl font-bold mb-6">Reservations</h2> {/* Increased margin */}
+      <h2 className="text-3xl font-bold mb-6">Reservations</h2>
 
       {/* Table */}
       {sorted.length > 0 ? (
         <div className="overflow-x-auto">
-          <table className="min-w-full border-collapse table-auto text-center text-white">
+          <table className="min-w-full border-collapse table-auto text-center">
             <thead>
-              <tr className="border-b border-gray-700">
+              <tr
+                style={{
+                  backgroundColor: "#F3F3F5",
+                  color: "#0D291A",
+                  fontFamily: "sans-serif"
+                }}
+              >
                 <th className="px-6 py-3">License Plate</th>
                 <th className="px-6 py-3">Start Time</th>
                 <th className="px-6 py-3">End Time</th>
