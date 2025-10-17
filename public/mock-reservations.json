@@ -1,0 +1,16 @@
+[
+  {
+    "licensePlate": "AA-11-BB",
+    "startTime": "2025-10-17T15:00:00Z",
+    "endTime": "2025-10-17T15:45:00Z",
+    "remark": "Lane 2",
+    "soc": 45
+  },
+  {
+    "licensePlate": "CC-22-DD",
+    "startTime": "2025-10-17T16:00:00Z",
+    "endTime": "2025-10-17T16:30:00Z",
+    "remark": "Lane 1 at 16:10",
+    "soc": 62
+  }
+]
