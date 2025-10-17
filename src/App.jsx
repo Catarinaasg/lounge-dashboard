@@ -61,9 +61,9 @@ export default function LoungeDashboard() {
           <table className="min-w-full border-collapse table-auto text-center text-white">
             <thead>
               <tr className="border-b border-gray-700">
-                <th className="px-6 py-3">License Plate</th>
-                <th className="px-6 py-3">Start Time</th>
-                <th className="px-6 py-3">End Time</th>
+                <th className="px-6 py-3">License plate</th>
+                <th className="px-6 py-3">Start time</th>
+                <th className="px-6 py-3">End time</th>
                 <th className="px-6 py-3">Lane</th>
                 <th className="px-6 py-3">Remarks</th>
                 <th className="px-6 py-3">SOC</th>
