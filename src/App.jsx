@@ -41,7 +41,7 @@ export default function LoungeDashboard() {
       {/* Header with logo and clock */}
       <header className="flex items-center justify-between mb-8">
         <div className="flex items-center">
-          <img src="/logo.png" alt="Company Logo" className="h-12 w-auto mr-4" />
+          <img src="/logo.png" alt="Company Logo" className="h-8 w-auto mr-4" />
           {/* Optional: small text or slogan */}
         </div>
         <div className="text-right">
