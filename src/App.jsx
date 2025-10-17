@@ -92,7 +92,7 @@ export default function App() {
                     key={i}
                     style={{
                       backgroundColor: bgColor,
-                      height: "54px", // 👈 consistent row height
+                      height: "54px",
                     }}
                   >
                     <td className="px-6 py-4">{r.licensePlate || "—"}</td>
@@ -113,17 +113,19 @@ export default function App() {
                         : "—"}
                     </td>
 
-                    {/* Lane with circle */}
+                    {/* Lane as horizontal ellipse */}
                     <td className="px-6 py-4">
                       {r.lane ? (
                         <span
-                          className="inline-flex items-center justify-center rounded-full font-semibold"
+                          className="inline-flex items-center justify-center font-semibold"
                           style={{
-                            border: "2px solid #02CC02",
+                            backgroundColor: "#02CC02",
                             color: "#0D291A",
-                            backgroundColor: "white",
-                            width: "36px",
+                            padding: "10px",
                             height: "36px",
+                            minWidth: "60px",
+                            borderRadius: "10px",
+                            display: "inline-flex",
                           }}
                         >
                           {r.lane}
