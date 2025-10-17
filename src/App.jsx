@@ -37,13 +37,9 @@ export default function App() {
   return (
     <div
       className="min-h-screen flex flex-col p-8"
-      style={{
-        backgroundColor: "#0D291A",
-        fontFamily: "sans-serif",
-        color: "white",
-      }}
+      style={{ backgroundColor: "#0D291A", color: "white" }}
     >
-      {/* Header with logo and clock */}
+      {/* Header */}
       <header className="flex items-start justify-between mb-8">
         <img src="/logo.png" alt="Greenlane Logo" className="h-8 w-auto mt-1" />
         <div className="text-right leading-tight">
@@ -52,7 +48,7 @@ export default function App() {
               {currentTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </span>
           </div>
-          <div className="text-xs text-gray-300 mt-1">
+          <div className="text-xs text-gray-300 mt-1 font-bold">
             Last updated:{" "}
             {lastUpdated
               ? lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
@@ -113,7 +109,7 @@ export default function App() {
                         : "—"}
                     </td>
 
-                    {/* Lane as horizontal ellipse */}
+                    {/* Lane badge as horizontal ellipse */}
                     <td className="px-6 py-4">
                       {r.lane ? (
                         <span
@@ -121,11 +117,12 @@ export default function App() {
                           style={{
                             backgroundColor: "#02CC02",
                             color: "#0D291A",
-                            padding: "10px",
-                            height: "36px",
-                            minWidth: "60px",
+                            height: "24px",
+                            width: "47px",
                             borderRadius: "10px",
                             display: "inline-flex",
+                            justifyContent: "center",
+                            alignItems: "center",
                           }}
                         >
                           {r.lane}
