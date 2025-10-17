@@ -12,5 +12,12 @@
     "endTime": "2025-10-17T16:30:00Z",
     "remark": "Lane 1 at 16:10",
     "soc": 62
+  },
+  {
+    "licensePlate": "EE-33-FF",
+    "startTime": "2025-10-17T17:00:00Z",
+    "endTime": "2025-10-17T17:45:00Z",
+    "remark": "Lane 3",
+    "soc": 30
   }
 ]
