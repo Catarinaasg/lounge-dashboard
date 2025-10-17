@@ -65,12 +65,12 @@ export default function App() {
       </header>
 
       {/* Reservations Title */}
-      <h2 className="text-3xl font-bold mb-6">Reservations</h2>
+      <h2 className="text-3xl font-bold mb-8">Reservations</h2>
 
       {/* Table */}
       {sorted.length > 0 ? (
         <div className="overflow-x-auto">
-          <table className="min-w-full border-collapse table-auto text-center text-lg">
+          <table className="min-w-full border-collapse text-center text-lg">
             <thead>
               <tr
                 style={{
@@ -90,11 +90,7 @@ export default function App() {
               {sorted.map((r, i) => {
                 const bgColor = i % 2 === 0 ? "#0D291A" : "#24511D";
                 return (
-                  <tr
-                    key={i}
-                    style={{ backgroundColor: bgColor }}
-                    className="border-b border-gray-700"
-                  >
+                  <tr key={i} style={{ backgroundColor: bgColor }}>
                     <td className="px-6 py-4">{r.licensePlate || "—"}</td>
                     <td className="px-6 py-4">
                       {r.startTime
