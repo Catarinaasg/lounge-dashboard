@@ -64,13 +64,14 @@ export default function LoungeDashboard() {
 
       {sorted.length > 0 ? (
         <div className="overflow-x-auto">
-          <table className="min-w-full border-collapse table-auto text-center">
+          <table className="min-w-full border-collapse table-auto text-center text-white">
             <thead>
               <tr className="border-b border-gray-700">
                 <th className="px-6 py-3">License Plate</th>
                 <th className="px-6 py-3">Start Time</th>
                 <th className="px-6 py-3">End Time</th>
-                <th className="px-6 py-3">Lane / Remarks</th>
+                <th className="px-6 py-3">Lane</th>
+                <th className="px-6 py-3">Remarks</th>
                 <th className="px-6 py-3">SOC</th>
               </tr>
             </thead>
@@ -90,6 +91,7 @@ export default function LoungeDashboard() {
                         ? new Date(r.endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
                         : "—"}
                     </td>
+                    <td className="px-6 py-4 font-medium">{r.lane || "—"}</td>
                     <td className="px-6 py-4">{r.remark || "—"}</td>
                     <td className="px-6 py-4 font-bold">{r.soc ?? "—"}%</td>
                   </tr>
@@ -104,3 +106,4 @@ export default function LoungeDashboard() {
     </div>
   );
 }
+
