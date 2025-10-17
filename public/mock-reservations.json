@@ -36,7 +36,7 @@
     "startTime": "2025-10-17T15:00:00",
     "endTime": "2025-10-17T20:00:00",
     "lane": null,
-    "remark": "Lane info T14:30:00",
+    "remark": "Lane info 2:30 PM",
     "soc": null
   },
   {
@@ -44,7 +44,7 @@
     "startTime": "2025-10-17T15:00:00",
     "endTime": "2025-10-17T20:00:00",
     "lane": null,
-    "remark": "Lane info T14:30:00",
+    "remark": "Lane info 2:30 PM",
     "soc": null
   },
   {
@@ -52,7 +52,7 @@
     "startTime": "2025-10-17T15:00:00",
     "endTime": "2025-10-17T20:00:00",
     "lane": null,
-    "remark": "Lane info T14:30:00",
+    "remark": "Lane info 2:30 PM",
     "soc": null
   },
   {
@@ -60,7 +60,7 @@
     "startTime": "2025-10-17T20:00:00",
     "endTime": "2025-10-18T10:00:00",
     "lane": null,
-    "remark": "Lane info T19:30:00",
+    "remark": "Lane info 7:30 PM",
     "soc": null
   },
   {
@@ -68,7 +68,7 @@
     "startTime": "2025-10-17T20:00:00",
     "endTime": "2025-10-18T10:00:00",
     "lane": null,
-    "remark": "Lane info T19:30:00",
+    "remark": "Lane info 7:30 PM",
     "soc": null
   }
 ]
