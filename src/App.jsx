@@ -77,7 +77,7 @@ export default function App() {
                 <th className="px-6 py-3">End</th>
                 <th className="px-6 py-3">Lane</th>
                 <th className="px-6 py-3">Remark</th>
-                <th className="px-6 py-3">SoC</th>
+                <th className="px-6 py-3">Battery</th>
               </tr>
             </thead>
             <tbody>
