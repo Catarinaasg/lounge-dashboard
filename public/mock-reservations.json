@@ -12,7 +12,7 @@
     "startTime": "2025-10-17T09:15:00",
     "endTime": "2025-10-17T11:45:00",
     "lane": "46",
-    "remark": "Ongoing",
+    "remark": "Charging",
     "battery": 44
   },
   {
@@ -20,7 +20,7 @@
     "startTime": "2025-10-17T10:00:00",
     "endTime": "2025-10-17T18:00:00",
     "lane": "48",
-    "remark": "Ongoing",
+    "remark": "Charging",
     "battery": 65
   },
   {
