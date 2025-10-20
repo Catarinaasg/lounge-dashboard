@@ -86,7 +86,7 @@ export default function App() {
       <h2
         className="font-bold text-3xl"
         style={{
-          marginTop: "82px",
+          marginTop: "75px",
           marginBottom: "32px",
           fontFamily: "Geist, sans-serif",
         }}
