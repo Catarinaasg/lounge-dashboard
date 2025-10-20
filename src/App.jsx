@@ -37,9 +37,13 @@ export default function App() {
   return (
     <div
       className="min-h-screen flex flex-col p-8"
-      style={{ backgroundColor: "#0D291A", color: "white" }}
+      style={{
+        backgroundColor: "#0D291A",
+        fontFamily: "sans-serif",
+        color: "white",
+      }}
     >
-      {/* Header */}
+      {/* Header with logo and clock */}
       <header className="flex items-start justify-between mb-8">
         <img src="/logo.png" alt="Greenlane Logo" className="h-8 w-auto mt-1" />
         <div className="text-right leading-tight">
@@ -77,7 +81,7 @@ export default function App() {
                 <th className="px-6 py-3">End</th>
                 <th className="px-6 py-3">Lane</th>
                 <th className="px-6 py-3">Remark</th>
-                <th className="px-6 py-3">Battery</th>
+                <th className="px-6 py-3">SoC</th>
               </tr>
             </thead>
             <tbody>
@@ -109,7 +113,7 @@ export default function App() {
                         : "—"}
                     </td>
 
-                    {/* Lane badge as horizontal ellipse */}
+                    {/* Lane with horizontal ellipse */}
                     <td className="px-6 py-4">
                       {r.lane ? (
                         <span
@@ -117,12 +121,11 @@ export default function App() {
                           style={{
                             backgroundColor: "#02CC02",
                             color: "#0D291A",
+                            padding: "10px",
                             height: "24px",
-                            width: "47px",
+                            minWidth: "47px",
                             borderRadius: "10px",
                             display: "inline-flex",
-                            justifyContent: "center",
-                            alignItems: "center",
                           }}
                         >
                           {r.lane}
@@ -133,7 +136,26 @@ export default function App() {
                     </td>
 
                     <td className="px-6 py-4">{r.remark || "—"}</td>
-                    <td className="px-6 py-4">{r.battery ?? "—"}%</td>
+
+                    {/* SoC with percentage + green progress bar */}
+                    <td className="px-6 py-4">
+                      {r.soc ? (
+                        <div className="flex items-center gap-3 justify-center">
+                          <span className="font-semibold">{r.soc}%</span>
+                          <div className="w-24 bg-gray-300 rounded-full h-3 overflow-hidden">
+                            <div
+                              className="h-3 rounded-full"
+                              style={{
+                                width: `${r.soc}%`,
+                                backgroundColor: "#02CC02",
+                              }}
+                            ></div>
+                          </div>
+                        </div>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
                   </tr>
                 );
               })}
