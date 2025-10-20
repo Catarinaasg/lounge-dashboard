@@ -39,41 +39,69 @@ export default function App() {
       className="min-h-screen flex flex-col p-8"
       style={{
         backgroundColor: "#0D291A",
-        fontFamily: "sans-serif",
+        fontFamily: "Geist, sans-serif",
         color: "white",
       }}
     >
-      {/* Header with logo and clock */}
-      <header className="flex items-start justify-between mb-8">
+      {/* Header */}
+      <header className="flex items-start justify-between">
         <img src="/logo.png" alt="Greenlane Logo" className="h-8 w-auto mt-1" />
+
         <div className="text-right leading-tight">
           <div className="flex justify-end items-baseline gap-3">
-            <span className="text-lg font-mono">
-              {currentTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            <span
+              className="font-bold"
+              style={{ fontSize: "36px", fontFamily: "Geist, sans-serif" }}
+            >
+              {currentTime.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             </span>
           </div>
-          <div className="text-xs text-gray-300 mt-1 font-bold">
-            Last updated:{" "}
+          <div
+            className="text-gray-300 mt-1"
+            style={{
+              fontSize: "14px",
+              fontFamily: "Geist, sans-serif",
+            }}
+          >
+            <strong>Last updated:</strong>{" "}
             {lastUpdated
-              ? lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+              ? lastUpdated.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
               : "—"}
           </div>
         </div>
       </header>
 
-      {/* Reservations Title */}
-      <h2 className="text-3xl font-bold mb-8">Reservations</h2>
+      {/* Title */}
+      <h2
+        className="font-bold text-3xl"
+        style={{
+          marginTop: "183px",
+          marginBottom: "32px",
+          fontFamily: "Geist, sans-serif",
+        }}
+      >
+        Reservations
+      </h2>
 
       {/* Table */}
       {sorted.length > 0 ? (
         <div className="overflow-x-auto">
-          <table className="min-w-full border-collapse text-center text-lg">
+          <table className="min-w-full border-collapse text-center">
             <thead>
               <tr
                 style={{
                   backgroundColor: "#02CC02",
                   color: "#0D291A",
                   height: "54px",
+                  fontSize: "20px",
+                  fontWeight: "700",
+                  fontFamily: "Geist, sans-serif",
                 }}
               >
                 <th className="px-6 py-3">Vehicle</th>
@@ -93,6 +121,9 @@ export default function App() {
                     style={{
                       backgroundColor: bgColor,
                       height: "54px",
+                      fontSize: "20px",
+                      fontWeight: "400",
+                      fontFamily: "Geist, sans-serif",
                     }}
                   >
                     <td className="px-6 py-4">{r.licensePlate || "—"}</td>
@@ -113,19 +144,18 @@ export default function App() {
                         : "—"}
                     </td>
 
-                    {/* Lane with horizontal ellipse */}
+                    {/* Lane ellipse */}
                     <td className="px-6 py-4">
                       {r.lane ? (
                         <span
                           className="inline-flex items-center justify-center font-semibold"
                           style={{
-                            backgroundColor: "#02CC02",
+                            border: "2px solid #02CC02",
                             color: "#0D291A",
-                            padding: "10px",
+                            backgroundColor: "white",
+                            width: "47px",
                             height: "24px",
-                            minWidth: "47px",
                             borderRadius: "10px",
-                            display: "inline-flex",
                           }}
                         >
                           {r.lane}
@@ -137,24 +167,21 @@ export default function App() {
 
                     <td className="px-6 py-4">{r.remark || "—"}</td>
 
-                    {/* Battery with percentage + green progress bar */}
+                    {/* Battery progress bar */}
                     <td className="px-6 py-4">
-                      {r.battery ? (
-                        <div className="flex items-center gap-3 justify-center">
-                          <span className="font-semibold">{r.battery}%</span>
-                          <div className="w-24 bg-gray-300 rounded-full h-3 overflow-hidden">
-                            <div
-                              className="h-3 rounded-full"
-                              style={{
-                                width: `${r.battery}%`,
-                                backgroundColor: "#02CC02",
-                              }}
-                            ></div>
-                          </div>
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="w-24 bg-gray-300 rounded-full h-2">
+                          <div
+                            className="bg-[#02CC02] h-2 rounded-full"
+                            style={{
+                              width: `${
+                                r.soc ? parseInt(r.soc.replace("%", "")) : 0
+                              }%`,
+                            }}
+                          ></div>
                         </div>
-                      ) : (
-                        "—"
-                      )}
+                        <span>{r.soc ?? "—"}%</span>
+                      </div>
                     </td>
                   </tr>
                 );
