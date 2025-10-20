@@ -157,7 +157,7 @@ export default function App() {
                           style={{
                             border: "2px solid #02CC02",
                             color: "#0D291A",
-                            backgroundColor: "#02CC02", // same color as border
+                            backgroundColor: "#02CC02",
                             width: "47px",
                             height: "24px",
                             borderRadius: "10px",
@@ -179,21 +179,11 @@ export default function App() {
                           <div
                             className="bg-[#02CC02] h-2 rounded-full"
                             style={{
-                              width: `${
-                                r.soc
-                                  ? typeof r.soc === "string"
-                                    ? parseInt(r.soc.replace("%", ""))
-                                    : r.soc
-                                  : 0
-                              }%`,
+                              width: `${r.battery ?? 0}%`,
                             }}
                           ></div>
                         </div>
-                        <span>
-                          {typeof r.soc === "string"
-                            ? r.soc
-                            : `${r.soc ?? "—"}%`}
-                        </span>
+                        <span>{r.battery ?? 0}%</span>
                       </div>
                     </td>
                   </tr>
