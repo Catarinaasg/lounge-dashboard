@@ -46,7 +46,7 @@ export default function App() {
       {/* Header */}
       <header
         className="flex items-start justify-between"
-        style={{ marginTop: "64px" }}
+        style={{ marginTop: "44px" }}
       >
         <img src="/logo.png" alt="Greenlane Logo" className="h-8 w-auto mt-1" />
 
@@ -86,7 +86,7 @@ export default function App() {
       <h2
         className="font-bold text-3xl"
         style={{
-          marginTop: "122px",
+          marginTop: "82px",
           marginBottom: "32px",
           fontFamily: "Geist, sans-serif",
         }}
