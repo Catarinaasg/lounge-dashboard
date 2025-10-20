@@ -133,7 +133,7 @@ export default function App() {
                     </td>
 
                     <td className="px-6 py-4">{r.remark || "—"}</td>
-                    <td className="px-6 py-4">{r.soc ?? "—"}%</td>
+                    <td className="px-6 py-4">{r.battery ?? "—"}%</td>
                   </tr>
                 );
               })}
