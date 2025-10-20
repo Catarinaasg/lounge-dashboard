@@ -81,7 +81,7 @@ export default function App() {
                 <th className="px-6 py-3">End</th>
                 <th className="px-6 py-3">Lane</th>
                 <th className="px-6 py-3">Remark</th>
-                <th className="px-6 py-3">SoC</th>
+                <th className="px-6 py-3">Battery</th>
               </tr>
             </thead>
             <tbody>
@@ -137,16 +137,16 @@ export default function App() {
 
                     <td className="px-6 py-4">{r.remark || "—"}</td>
 
-                    {/* SoC with percentage + green progress bar */}
+                    {/* Battery with percentage + green progress bar */}
                     <td className="px-6 py-4">
-                      {r.soc ? (
+                      {r.battery ? (
                         <div className="flex items-center gap-3 justify-center">
-                          <span className="font-semibold">{r.soc}%</span>
+                          <span className="font-semibold">{r.battery}%</span>
                           <div className="w-24 bg-gray-300 rounded-full h-3 overflow-hidden">
                             <div
                               className="h-3 rounded-full"
                               style={{
-                                width: `${r.soc}%`,
+                                width: `${r.battery}%`,
                                 backgroundColor: "#02CC02",
                               }}
                             ></div>
