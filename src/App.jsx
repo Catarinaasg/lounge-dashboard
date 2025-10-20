@@ -44,7 +44,10 @@ export default function App() {
       }}
     >
       {/* Header */}
-      <header className="flex items-start justify-between">
+      <header
+        className="flex items-start justify-between"
+        style={{ marginTop: "64px" }}
+      >
         <img src="/logo.png" alt="Greenlane Logo" className="h-8 w-auto mt-1" />
 
         <div className="text-right leading-tight">
@@ -66,13 +69,15 @@ export default function App() {
               fontFamily: "Geist, sans-serif",
             }}
           >
-            <strong>Last updated:</strong>{" "}
-            {lastUpdated
-              ? lastUpdated.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
-              : "—"}
+            Last updated:{" "}
+            <span className="font-bold">
+              {lastUpdated
+                ? lastUpdated.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "—"}
+            </span>
           </div>
         </div>
       </header>
@@ -152,7 +157,7 @@ export default function App() {
                           style={{
                             border: "2px solid #02CC02",
                             color: "#0D291A",
-                            backgroundColor: "white",
+                            backgroundColor: "#02CC02", // same color as border
                             width: "47px",
                             height: "24px",
                             borderRadius: "10px",
@@ -175,12 +180,20 @@ export default function App() {
                             className="bg-[#02CC02] h-2 rounded-full"
                             style={{
                               width: `${
-                                r.soc ? parseInt(r.soc.replace("%", "")) : 0
+                                r.soc
+                                  ? typeof r.soc === "string"
+                                    ? parseInt(r.soc.replace("%", ""))
+                                    : r.soc
+                                  : 0
                               }%`,
                             }}
                           ></div>
                         </div>
-                        <span>{r.soc ?? "—"}%</span>
+                        <span>
+                          {typeof r.soc === "string"
+                            ? r.soc
+                            : `${r.soc ?? "—"}%`}
+                        </span>
                       </div>
                     </td>
                   </tr>
