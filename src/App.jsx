@@ -161,6 +161,8 @@ export default function App() {
                             width: "47px",
                             height: "24px",
                             borderRadius: "10px",
+                            lineHeight: "24px",  // ensures vertical centering
+                            textAlign: "center",  // just in case
                           }}
                         >
                           {r.lane}
