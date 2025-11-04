@@ -5,7 +5,7 @@ export default function App() {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [screen, setScreen] = useState("upcoming"); // alternate between "upcoming" and "ongoing"
-  const API_URL = import.meta.env.VITE_API_URL || "/mock-reservations.json";
+  const API_URL = import.meta.env.VITE_API_URL || "./mock-reservations.json";
 
   async function fetchData() {
     try {
