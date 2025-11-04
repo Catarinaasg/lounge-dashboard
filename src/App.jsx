@@ -11,7 +11,6 @@ export default function App() {
   // --- helpers ----------------------------------------------------
   const now = new Date();
 
-  // Keep an ISO string in *local* time (no trailing "Z"), so browser treats it as local.
   function toLocalISOString(d) {
     const pad = (n) => String(n).padStart(2, "0");
     return (
@@ -29,7 +28,6 @@ export default function App() {
     );
   }
 
-  // Shift a record's date to today, preserving start clock time and duration.
   function shiftRecordToToday(r) {
     const startOrig = new Date(r.startTime);
     const endOrig = new Date(r.endTime);
@@ -54,7 +52,6 @@ export default function App() {
     };
   }
 
-  // Determine if any item would be visible under your filters right now.
   function anyVisible(list) {
     const n = new Date();
     const hasOngoing = list.some((r) => {
@@ -74,7 +71,6 @@ export default function App() {
       const raw = await res.json();
       const data = Array.isArray(raw) ? raw : [];
 
-      // If nothing would show (all past), shift everything to today for demo
       const normalized = anyVisible(data) ? data : data.map(shiftRecordToToday);
 
       setReservations(normalized);
@@ -85,20 +81,17 @@ export default function App() {
     }
   }
 
-  // Fetch every 30s
   useEffect(() => {
     fetchData();
     const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  // Update clock every second
   useEffect(() => {
     const t = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
 
-  // Alternate screens every 10s
   useEffect(() => {
     const t = setInterval(() => {
       setScreen((prev) => (prev === "upcoming" ? "ongoing" : "upcoming"));
@@ -115,15 +108,27 @@ export default function App() {
 
   const upcoming = reservations.filter((r) => new Date(r.startTime) > now);
 
-  const actionRequired = ongoing.filter(
-    (r) => r.remark?.toLowerCase() === "idling"
+  // Only show these remarks on the ONGOING screen
+  const allowedRemarks = new Set(["charging", "idling"]);
+  const ongoingAllowed = ongoing.filter((r) =>
+    allowedRemarks.has((r.remark || "").toLowerCase())
   );
 
-  const filtered = screen === "ongoing" ? [...actionRequired, ...ongoing] : upcoming;
+  // Action required = Idling (but only among allowed ongoing)
+  const actionRequired = ongoingAllowed.filter(
+    (r) => (r.remark || "").toLowerCase() === "idling"
+  );
+
+  const filtered =
+    screen === "ongoing"
+      ? [...actionRequired, ...ongoingAllowed]
+      : upcoming;
 
   const sorted = [...filtered].sort(
     (a, b) => new Date(a.startTime) - new Date(b.startTime)
   );
+
+  const showTimes = screen !== "ongoing"; // hide Start/End on ongoing screen
 
   // --- UI ----------------------------------------------------------
   return (
@@ -160,7 +165,7 @@ export default function App() {
         {screen === "ongoing" ? "Ongoing Sessions" : "Upcoming Reservations"}
       </h2>
 
-      {/* Action Required Section */}
+      {/* Action Required Section (only on ongoing, only if any Idling) */}
       {screen === "ongoing" && actionRequired.length > 0 && (
         <div className="mb-8">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#02CC02", marginBottom: "12px" }}>
@@ -191,8 +196,8 @@ export default function App() {
                 }}
               >
                 <th className="px-6 py-3">Vehicle</th>
-                <th className="px-6 py-3">Start</th>
-                <th className="px-6 py-3">End</th>
+                {showTimes && <th className="px-6 py-3">Start</th>}
+                {showTimes && <th className="px-6 py-3">End</th>}
                 <th className="px-6 py-3">Lane</th>
                 <th className="px-6 py-3">Remark</th>
                 <th className="px-6 py-3">Battery</th>
@@ -204,16 +209,23 @@ export default function App() {
                 return (
                   <tr key={i} style={{ backgroundColor: bgColor, height: "54px", fontSize: "20px" }}>
                     <td className="px-6 py-4">{r.licensePlate || "—"}</td>
-                    <td className="px-6 py-4">
-                      {r.startTime
-                        ? new Date(r.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-                        : "—"}
-                    </td>
-                    <td className="px-6 py-4">
-                      {r.endTime
-                        ? new Date(r.endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-                        : "—"}
-                    </td>
+
+                    {/* Hide times on ongoing screen */}
+                    {showTimes && (
+                      <td className="px-6 py-4">
+                        {r.startTime
+                          ? new Date(r.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                          : "—"}
+                      </td>
+                    )}
+                    {showTimes && (
+                      <td className="px-6 py-4">
+                        {r.endTime
+                          ? new Date(r.endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                          : "—"}
+                      </td>
+                    )}
+
                     <td className="px-6 py-4">
                       {r.lane ? (
                         <span
@@ -234,7 +246,9 @@ export default function App() {
                         "—"
                       )}
                     </td>
+
                     <td className="px-6 py-4">{r.remark || "—"}</td>
+
                     <td className="px-6 py-4">
                       {r.soc !== null && r.soc !== undefined ? (
                         <div className="flex items-center justify-center gap-2">
