@@ -8,17 +8,22 @@ export default function App() {
   const API_URL = import.meta.env.VITE_API_URL || "./mock-reservations.json";
 
   async function fetchData() {
-    try {
-      const res = await fetch(API_URL, { cache: "no-store" });
-      if (!res.ok) throw new Error("Network error");
-      const data = await res.json();
-      setReservations(Array.isArray(data) ? data : []);
-      setLastUpdated(new Date());
-    } catch (err) {
-      console.error("Failed to fetch reservations:", err);
-      setReservations([]);
+  try {
+    console.log("Fetching from:", API_URL);
+    const res = await fetch(API_URL, { cache: "no-store" });
+    if (!res.ok) {
+      throw new Error(`Network response was not ok: ${res.status}`);
     }
+
+    const data = await res.json();
+    console.log("Fetched data:", data);
+    setReservations(Array.isArray(data) ? data : []);
+    setLastUpdated(new Date());
+  } catch (err) {
+    console.error("Failed to fetch reservations:", err);
+    setReservations([]);
   }
+}
 
   useEffect(() => {
     fetchData();
