@@ -46,7 +46,7 @@ export default function App() {
   const idling = ongoing.filter((r) => r.remark?.toLowerCase() === "idling");
 
   const dataToShow = showUpcoming ? upcoming : ongoing;
-  const title = showUpcoming ? "Upcoming Reservations" : "Ongoing Sessions";
+  const title = showUpcoming ? "Reservations" : "Ongoing sessions";
 
   return (
     <div
