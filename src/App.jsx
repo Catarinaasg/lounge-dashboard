@@ -46,20 +46,28 @@ export default function App() {
   // ---- Sorting and filtering logic ----
   const now = new Date();
 
-  const upcoming = reservations.filter((r) => new Date(r.startTime) > now);
-  const ongoing = reservations.filter(
-    (r) => new Date(r.startTime) <= now && new Date(r.endTime) >= now
-  );
-  const actionRequired = ongoing.filter(
-    (r) => r.remark?.toLowerCase() === "idling"
-  );
+  // Ongoing sessions = current time is between start and end
+  const ongoing = reservations.filter((r) => {
+    const start = new Date(r.startTime);
+    const end = new Date(r.endTime);
+    return start <= now && now <= end;
+  });
 
-  const sortedUpcoming = [...upcoming].sort(
-    (a, b) => new Date(a.startTime) - new Date(b.startTime)
-  );
-  const sortedOngoing = [...ongoing].sort(
-    (a, b) => new Date(a.startTime) - new Date(b.startTime)
-  );
+  // Upcoming = start time is in the future
+  const upcoming = reservations.filter((r) => {
+    const start = new Date(r.startTime);
+    return start > now;
+  });
+  
+  // Action Required = ongoing + remark === "Idling"
+  const actionRequired = ongoing.filter((r) => r.remark?.toLowerCase() === "idling");
+  
+  // Choose which to display based on screen
+  const filtered =
+    screen === "ongoing"
+      ? [...actionRequired, ...ongoing]
+      : upcoming;
+
 
   return (
     <div
