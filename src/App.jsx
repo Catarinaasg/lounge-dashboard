@@ -236,7 +236,7 @@ export default function App() {
                 const remarkLower = (r.remark || "").toLowerCase();
                 const remarkDisplay =
                   remarkLower === "idling"
-                    ? "Idling - Please move your vehicle"
+                    ? "Idling - ⚠️ Please move your vehicle"
                     : r.remark || "—";
 
                 return (
