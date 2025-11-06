@@ -1,74 +1,11 @@
 [
-  {
-    "licensePlate": "7GTQ623",
-    "startTime": "2025-10-17T09:00:00",
-    "endTime": "2025-10-17T11:00:00",
-    "lane": "37",
-    "remark": "Idling",
-    "soc": 97
-  },
-  {
-    "licensePlate": "1IRY493",
-    "startTime": "2025-10-17T09:15:00",
-    "endTime": "2025-10-17T11:45:00",
-    "lane": "46",
-    "remark": "Charging",
-    "soc": 44
-  },
-  {
-    "licensePlate": "1FAF587",
-    "startTime": "2025-10-17T10:00:00",
-    "endTime": "2025-10-17T18:00:00",
-    "lane": "48",
-    "remark": "Charging",
-    "soc": 65
-  },
-  {
-    "licensePlate": "1FWD124",
-    "startTime": "2025-10-17T11:00:00",
-    "endTime": "2025-10-17T20:00:00",
-    "lane": "36",
-    "remark": "Go to lane",
-    "soc": null
-  },
-  {
-    "licensePlate": "7GTQ623",
-    "startTime": "2025-10-17T15:00:00",
-    "endTime": "2025-10-17T20:00:00",
-    "lane": null,
-    "remark": "Lane info 2:30 PM",
-    "soc": null
-  },
-  {
-    "licensePlate": "1IRY493",
-    "startTime": "2025-10-17T15:00:00",
-    "endTime": "2025-10-17T20:00:00",
-    "lane": null,
-    "remark": "Lane info 2:30 PM",
-    "soc": null
-  },
-  {
-    "licensePlate": "1FAF587",
-    "startTime": "2025-10-17T15:00:00",
-    "endTime": "2025-10-17T20:00:00",
-    "lane": null,
-    "remark": "Lane info 2:30 PM",
-    "soc": null
-  },
-  {
-    "licensePlate": "1FWD124",
-    "startTime": "2025-10-17T20:00:00",
-    "endTime": "2025-10-18T10:00:00",
-    "lane": null,
-    "remark": "Lane info 7:30 PM",
-    "soc": null
-  },
-  {
-    "licensePlate": "7GTQ623",
-    "startTime": "2025-10-17T20:00:00",
-    "endTime": "2025-10-18T10:00:00",
-    "lane": null,
-    "remark": "Lane info 7:30 PM",
-    "soc": null
-  }
+  { "licensePlate": "7GTQ623", "startTime": "2025-10-17T09:00:00", "endTime": "2025-10-17T11:00:00", "lane": "37", "remark": "Idling", "soc": 97 },
+  { "licensePlate": "1IRY493", "startTime": "2025-10-17T09:15:00", "endTime": "2025-10-17T11:45:00", "lane": "46", "remark": "Charging", "soc": 44 },
+  { "licensePlate": "1FAF587", "startTime": "2025-10-17T10:00:00", "endTime": "2025-10-17T18:00:00", "lane": "48", "remark": "Charging", "soc": 65 },
+  { "licensePlate": "1FWD124", "startTime": "2025-10-17T11:00:00", "endTime": "2025-10-17T20:00:00", "lane": "36", "remark": "Go to lane", "soc": null },
+  { "licensePlate": "7GTQ623", "startTime": "2025-10-17T15:00:00", "endTime": "2025-10-17T20:00:00", "lane": null, "remark": "Lane info 2:30 PM", "soc": null },
+  { "licensePlate": "1IRY493", "startTime": "2025-10-17T15:00:00", "endTime": "2025-10-17T20:00:00", "lane": null, "remark": "Lane info 2:30 PM", "soc": null },
+  { "licensePlate": "1FAF587", "startTime": "2025-10-17T15:00:00", "endTime": "2025-10-17T20:00:00", "lane": null, "remark": "Lane info 2:30 PM", "soc": null },
+  { "licensePlate": "1FWD124", "startTime": "2025-10-17T20:00:00", "endTime": "2025-10-18T10:00:00", "lane": null, "remark": "Lane info 7:30 PM", "soc": null },
+  { "licensePlate": "7GTQ623", "startTime": "2025-10-17T20:00:00", "endTime": "2025-10-18T10:00:00", "lane": null, "remark": "Lane info 7:30 PM", "soc": null }
 ]
