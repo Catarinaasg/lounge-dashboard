@@ -209,7 +209,7 @@ export default function App() {
           fontSize: "32px",
           fontWeight: "bold",
           marginBottom: "32px",
-          marginTop: "183px",
+          marginTop: "24px",
         }}
       >
         {screen === "ongoing" ? "Ongoing Sessions" : "Upcoming Reservations"}
