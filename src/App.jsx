@@ -6,7 +6,6 @@ export default function App() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [screen, setScreen] = useState("upcoming"); // "upcoming" | "ongoing"
 
-  // ---- URL handling ------------------------------------------------
   const envUrl = (import.meta.env.VITE_API_URL || "").trim();
   const PUBLIC_JSON_URL = `${import.meta.env.BASE_URL}mock-reservations.json`;
   const API_URL = envUrl || PUBLIC_JSON_URL;
@@ -14,7 +13,7 @@ export default function App() {
   function isLikelyValidUrl(u) {
     try {
       if (!u || typeof u !== "string") return false;
-      if (u.startsWith("/")) return true; // same-origin absolute path
+      if (u.startsWith("/")) return true;
       new URL(u);
       return true;
     } catch {
@@ -22,7 +21,6 @@ export default function App() {
     }
   }
 
-  // ---- helpers -----------------------------------------------------
   const now = new Date();
 
   function toLocalISOString(d) {
@@ -77,19 +75,15 @@ export default function App() {
     return hasOngoing || hasUpcoming;
   }
 
-  // ---- data fetching -----------------------------------------------
   async function fetchData() {
     try {
-      if (!isLikelyValidUrl(API_URL)) {
-        throw new Error(`Bad API_URL: "${API_URL}"`);
-      }
+      if (!isLikelyValidUrl(API_URL)) throw new Error(`Bad API_URL: "${API_URL}"`);
       const res = await fetch(API_URL, { cache: "no-store" });
       if (!res.ok) throw new Error(`Network error: ${res.status}`);
 
       const text = await res.text();
       const raw = JSON.parse(text);
       const data = Array.isArray(raw) ? raw : [];
-
       const normalized = anyVisible(data) ? data : data.map(shiftRecordToToday);
 
       setReservations(normalized);
@@ -118,12 +112,10 @@ export default function App() {
     return () => clearInterval(t);
   }, []);
 
-  // ---- filtering/sorting -------------------------------------------
   const allowedRemarks = new Set(["charging", "idling"]);
   const isAllowedRemark = (r) =>
     allowedRemarks.has((r.remark || "").toLowerCase());
 
-  // Ongoing (time-window + allowed remark)
   const ongoingWindow = reservations.filter((r) => {
     const s = new Date(r.startTime);
     const e = new Date(r.endTime);
@@ -131,7 +123,6 @@ export default function App() {
   });
   const ongoingAllowed = ongoingWindow.filter(isAllowedRemark);
 
-  // Upcoming: future only, and NOT Charging/Idling
   const upcoming = reservations.filter(
     (r) => new Date(r.startTime) > now && !isAllowedRemark(r)
   );
@@ -141,11 +132,9 @@ export default function App() {
     (a, b) => new Date(a.startTime) - new Date(b.startTime)
   );
 
-  // Column visibility
   const showTimes = screen !== "ongoing";
   const showBattery = screen === "ongoing";
 
-  // ---- UI ----------------------------------------------------------
   return (
     <div
       className="min-h-screen flex flex-col p-8"
@@ -156,33 +145,18 @@ export default function App() {
       }}
     >
       {/* Header */}
-      <header
-        className="flex items-start justify-between mb-8"
-        style={{ marginTop: "32px" }}
-      >
+      <header className="flex items-start justify-between mb-8" style={{ marginTop: "32px" }}>
         <img src="/logo.png" alt="Greenlane Logo" className="h-8 w-auto mt-1" />
         <div className="text-right leading-tight">
           <div className="flex justify-end items-baseline gap-3">
-            <span
-              style={{
-                fontWeight: "bold",
-                fontSize: "36px",
-                fontFamily: "Geist, sans-serif",
-              }}
-            >
+            <span style={{ fontWeight: "bold", fontSize: "36px" }}>
               {currentTime.toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",
               })}
             </span>
           </div>
-          <div
-            style={{
-              fontSize: "14px",
-              color: "#CCCCCC",
-              marginTop: "4px",
-            }}
-          >
+          <div style={{ fontSize: "14px", color: "#CCCCCC", marginTop: "4px" }}>
             Last updated:{" "}
             <span style={{ fontWeight: "bold", color: "white" }}>
               {lastUpdated
@@ -197,21 +171,14 @@ export default function App() {
       </header>
 
       {/* Title */}
-      <h2
-        style={{
-          fontSize: "32px",
-          fontWeight: "bold",
-          marginBottom: "24px",
-          marginTop: "24px",
-        }}
-      >
+      <h2 className="text-3xl font-bold mb-6 mt-6">
         {screen === "ongoing" ? "Ongoing Sessions" : "Upcoming Reservations"}
       </h2>
 
       {/* Table */}
       {sorted.length > 0 ? (
         <div className="overflow-x-auto">
-          <table className="min-w-full border-collapse text-center">
+          <table className="min-w-full border-collapse text-left">
             <thead>
               <tr
                 style={{
@@ -222,32 +189,37 @@ export default function App() {
                   fontSize: "20px",
                 }}
               >
-                <th className="px-6 py-3">Vehicle</th>
-                {showTimes && <th className="px-6 py-3">Start</th>}
-                {showTimes && <th className="px-6 py-3">End</th>}
-                <th className="px-6 py-3">Lane</th>
-                <th className="px-6 py-3">Remark</th>
-                {showBattery && <th className="px-6 py-3">Battery</th>}
+                <th className="px-6 py-3 w-[160px]">Vehicle</th>
+                {showTimes && <th className="px-6 py-3 w-[150px]">Start</th>}
+                {showTimes && <th className="px-6 py-3 w-[150px]">End</th>}
+                <th className="px-6 py-3 w-[100px]">Lane</th>
+                <th className="px-6 py-3 w-[300px]">Remark</th>
+                {showBattery && <th className="px-6 py-3 w-[200px]">Battery</th>}
               </tr>
             </thead>
             <tbody>
               {sorted.map((r, i) => {
-                const bgColor = i % 2 === 0 ? "#0D291A" : "#24511D";
+                const baseColor = i % 2 === 0 ? "#0D291A" : "#24511D";
                 const remarkLower = (r.remark || "").toLowerCase();
+                const isActionRow =
+                  screen === "ongoing" && remarkLower === "idling";
                 const remarkDisplay =
                   remarkLower === "idling"
                     ? "Idling - ⚠️ Please move your vehicle"
                     : r.remark || "—";
 
+                const rowStyle = {
+                  backgroundColor: baseColor,
+                  height: "54px",
+                  fontSize: "20px",
+                  borderLeft: isActionRow ? "6px solid #F59E0B" : "6px solid transparent",
+                  boxShadow: isActionRow
+                    ? "0 0 0 2px rgba(245, 158, 11, 0.25) inset"
+                    : "none",
+                };
+
                 return (
-                  <tr
-                    key={i}
-                    style={{
-                      backgroundColor: bgColor,
-                      height: "54px",
-                      fontSize: "20px",
-                    }}
-                  >
+                  <tr key={i} style={rowStyle}>
                     <td className="px-6 py-4">{r.licensePlate || "—"}</td>
 
                     {showTimes && (
@@ -260,7 +232,6 @@ export default function App() {
                           : "—"}
                       </td>
                     )}
-
                     {showTimes && (
                       <td className="px-6 py-4">
                         {r.endTime
@@ -293,13 +264,12 @@ export default function App() {
                       )}
                     </td>
 
-                    {/* Remark with inline warning */}
                     <td className="px-6 py-4">{remarkDisplay}</td>
 
                     {showBattery && (
                       <td className="px-6 py-4">
                         {r.soc !== null && r.soc !== undefined ? (
-                          <div className="flex items-center justify-center gap-2">
+                          <div className="flex items-center gap-3">
                             <div className="w-32 bg-gray-500 h-2 rounded">
                               <div
                                 className="h-2 rounded"
