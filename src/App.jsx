@@ -134,7 +134,7 @@ export default function App() {
         50% { background-color: #F59E0B; color: #0D291A; }
       }
       .blink-row {
-        animation: blinkRow 1.5s infinite ease-in-out;
+        animation: blinkRow 3s infinite ease-in-out;
       }
     `;
     document.head.appendChild(style);
