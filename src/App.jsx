@@ -6,7 +6,7 @@ export default function App() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [screen, setScreen] = useState("upcoming"); // "upcoming" | "ongoing"
 
-  // ---- URL handling (prevents fetch SyntaxError) ------------------
+  // ---- URL handling ------------------------------------------------
   const envUrl = (import.meta.env.VITE_API_URL || "").trim();
   const PUBLIC_JSON_URL = `${import.meta.env.BASE_URL}mock-reservations.json`;
   const API_URL = envUrl || PUBLIC_JSON_URL;
@@ -14,15 +14,15 @@ export default function App() {
   function isLikelyValidUrl(u) {
     try {
       if (!u || typeof u !== "string") return false;
-      if (u.startsWith("/")) return true; // absolute same-origin path
-      new URL(u); // throws if invalid absolute URL
+      if (u.startsWith("/")) return true; // same-origin absolute path
+      new URL(u);
       return true;
     } catch {
       return false;
     }
   }
 
-  // ---- helpers ----------------------------------------------------
+  // ---- helpers -----------------------------------------------------
   const now = new Date();
 
   function toLocalISOString(d) {
@@ -77,7 +77,7 @@ export default function App() {
     return hasOngoing || hasUpcoming;
   }
 
-  // ---- data fetching ----------------------------------------------
+  // ---- data fetching -----------------------------------------------
   async function fetchData() {
     try {
       if (!isLikelyValidUrl(API_URL)) {
@@ -86,7 +86,7 @@ export default function App() {
       const res = await fetch(API_URL, { cache: "no-store" });
       if (!res.ok) throw new Error(`Network error: ${res.status}`);
 
-      const text = await res.text(); // guard against wrong content-type
+      const text = await res.text();
       const raw = JSON.parse(text);
       const data = Array.isArray(raw) ? raw : [];
 
@@ -118,37 +118,41 @@ export default function App() {
     return () => clearInterval(t);
   }, []);
 
-  // ---- filtering/sorting ------------------------------------------
+  // ---- filtering/sorting -------------------------------------------
   const allowedRemarks = new Set(["charging", "idling"]);
-  const isAllowedRemark = (r) => allowedRemarks.has((r.remark || "").toLowerCase());
+  const isAllowedRemark = (r) =>
+    allowedRemarks.has((r.remark || "").toLowerCase());
 
-  // Ongoing: time-window AND allowed remark
-  const ongoing = reservations.filter((r) => {
+  // Ongoing (time-window)
+  const ongoingWindow = reservations.filter((r) => {
     const s = new Date(r.startTime);
     const e = new Date(r.endTime);
     return s <= now && now <= e;
   });
-  const ongoingAllowed = ongoing.filter(isAllowedRemark);
 
-  // Action Required: Idling among ongoingAllowed
+  // Ongoing screen shows only Charging/Idling
+  const ongoingAllowed = ongoingWindow.filter(isAllowedRemark);
+
+  // Action required = Idling among allowed ongoing
   const actionRequired = ongoingAllowed.filter(
     (r) => (r.remark || "").toLowerCase() === "idling"
   );
 
-  // ✅ Upcoming: future only, and NOT Charging/Idling
+  // Upcoming: future only, and NOT Charging/Idling
   const upcoming = reservations.filter(
     (r) => new Date(r.startTime) > now && !isAllowedRemark(r)
   );
 
-  const filtered = screen === "ongoing" ? [...actionRequired, ...ongoingAllowed] : upcoming;
+  const filtered =
+    screen === "ongoing" ? [...actionRequired, ...ongoingAllowed] : upcoming;
 
   const sorted = [...filtered].sort(
     (a, b) => new Date(a.startTime) - new Date(b.startTime)
   );
 
-  // Column visibility
-  const showTimes = screen !== "ongoing";           // hide Start/End on ongoing
-  const showBattery = screen === "ongoing";         // hide Battery on upcoming
+  // Visibility flags
+  const showTimes = screen !== "ongoing"; // hide Start/End on ongoing
+  const showBattery = screen === "ongoing"; // hide Battery on upcoming
 
   // ---- UI ----------------------------------------------------------
   return (
@@ -207,13 +211,13 @@ export default function App() {
           fontSize: "32px",
           fontWeight: "bold",
           marginBottom: "24px",
-          marginTop: "24px", // ← updated from 183px to 24px
+          marginTop: "24px", // updated from 183px
         }}
       >
         {screen === "ongoing" ? "Ongoing Sessions" : "Upcoming Reservations"}
       </h2>
 
-      {/* Action Required Section */}
+      {/* Action Required */}
       {screen === "ongoing" && actionRequired.length > 0 && (
         <div className="mb-8">
           <h3
@@ -270,9 +274,10 @@ export default function App() {
                       fontSize: "20px",
                     }}
                   >
+                    {/* Vehicle */}
                     <td className="px-6 py-4">{r.licensePlate || "—"}</td>
 
-                    {/* Start/End only when showTimes */}
+                    {/* Start */}
                     {showTimes && (
                       <td className="px-6 py-4">
                         {r.startTime
@@ -281,3 +286,75 @@ export default function App() {
                               minute: "2-digit",
                             })
                           : "—"}
+                      </td>
+                    )}
+
+                    {/* End */}
+                    {showTimes && (
+                      <td className="px-6 py-4">
+                        {r.endTime
+                          ? new Date(r.endTime).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : "—"}
+                      </td>
+                    )}
+
+                    {/* Lane */}
+                    <td className="px-6 py-4">
+                      {r.lane ? (
+                        <span
+                          className="inline-flex items-center justify-center font-semibold"
+                          style={{
+                            backgroundColor: "#02CC02",
+                            color: "#0D291A",
+                            width: "47px",
+                            height: "24px",
+                            borderRadius: "10px",
+                            textAlign: "center",
+                            padding: "10px",
+                          }}
+                        >
+                          {r.lane}
+                        </span>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+
+                    {/* Remark */}
+                    <td className="px-6 py-4">{r.remark || "—"}</td>
+
+                    {/* Battery (always output a <td>, but empty on upcoming) */}
+                    <td className="px-6 py-4" style={{ display: showBattery ? undefined : "none" }}>
+                      {showBattery ? (
+                        r.soc !== null && r.soc !== undefined ? (
+                          <div className="flex items-center justify-center gap-2">
+                            <div className="w-32 bg-gray-500 h-2 rounded">
+                              <div
+                                className="h-2 rounded"
+                                style={{ width: `${r.soc}%`, backgroundColor: "#02CC02" }}
+                              />
+                            </div>
+                            <span>{r.soc}%</span>
+                          </div>
+                        ) : (
+                          "—"
+                        )
+                      ) : null}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p className="text-gray-400 mt-20 text-lg text-center">
+          No reservations to display
+        </p>
+      )}
+    </div>
+  );
+}
