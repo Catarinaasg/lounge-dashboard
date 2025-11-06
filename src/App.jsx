@@ -135,6 +135,23 @@ export default function App() {
   const showTimes = screen !== "ongoing";
   const showBattery = screen === "ongoing";
 
+  // ---- Blink keyframes style -------------------------------------
+  useEffect(() => {
+    const style = document.createElement("style");
+    style.innerHTML = `
+      @keyframes blinkRow {
+        0%, 100% { background-color: #2A4C1F; }
+        50% { background-color: #F59E0B; color: #0D291A; }
+      }
+      .blink-row {
+        animation: blinkRow 1.5s infinite ease-in-out;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
+
+  // ---- UI ----------------------------------------------------------
   return (
     <div
       className="min-h-screen flex flex-col p-8"
@@ -201,25 +218,24 @@ export default function App() {
               {sorted.map((r, i) => {
                 const baseColor = i % 2 === 0 ? "#0D291A" : "#24511D";
                 const remarkLower = (r.remark || "").toLowerCase();
-                const isActionRow =
+                const isBlink =
                   screen === "ongoing" && remarkLower === "idling";
                 const remarkDisplay =
                   remarkLower === "idling"
-                    ? "Idling - ⚠️ Please move your vehicle"
+                    ? "Idling - Please move your vehicle"
                     : r.remark || "—";
 
-                const rowStyle = {
-                  backgroundColor: baseColor,
-                  height: "54px",
-                  fontSize: "20px",
-                  borderLeft: isActionRow ? "6px solid #F59E0B" : "6px solid transparent",
-                  boxShadow: isActionRow
-                    ? "0 0 0 2px rgba(245, 158, 11, 0.25) inset"
-                    : "none",
-                };
-
                 return (
-                  <tr key={i} style={rowStyle}>
+                  <tr
+                    key={i}
+                    className={isBlink ? "blink-row" : ""}
+                    style={{
+                      backgroundColor: baseColor,
+                      height: "54px",
+                      fontSize: "20px",
+                      transition: "background-color 0.3s ease",
+                    }}
+                  >
                     <td className="px-6 py-4">{r.licensePlate || "—"}</td>
 
                     {showTimes && (
@@ -232,6 +248,7 @@ export default function App() {
                           : "—"}
                       </td>
                     )}
+
                     {showTimes && (
                       <td className="px-6 py-4">
                         {r.endTime
