@@ -6,9 +6,25 @@ export default function App() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [screen, setScreen] = useState("upcoming"); // "upcoming" | "ongoing"
 
-  const API_URL = import.meta.env.VITE_API_URL || "./mock-reservations.json";
+  // ---- URL handling (prevents fetch SyntaxError) ------------------
+  const envUrl = (import.meta.env.VITE_API_URL || "").trim();
+  // Serve mock from public/ with BASE_URL for subpath deployments
+  const PUBLIC_JSON_URL = `${import.meta.env.BASE_URL}mock-reservations.json`;
+  const API_URL = envUrl || PUBLIC_JSON_URL;
 
-  // --- helpers ----------------------------------------------------
+  function isLikelyValidUrl(u) {
+    try {
+      if (!u || typeof u !== "string") return false;
+      if (u.startsWith("/")) return true; // absolute path on same origin
+      // This will throw for invalid absolute URLs
+      new URL(u);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // ---- helpers ----------------------------------------------------
   const now = new Date();
 
   function toLocalISOString(d) {
@@ -63,14 +79,22 @@ export default function App() {
     return hasOngoing || hasUpcoming;
   }
 
-  // --- data fetching ----------------------------------------------
+  // ---- data fetching ----------------------------------------------
   async function fetchData() {
     try {
+      if (!isLikelyValidUrl(API_URL)) {
+        throw new Error(`Bad API_URL: "${API_URL}"`);
+      }
+
       const res = await fetch(API_URL, { cache: "no-store" });
       if (!res.ok) throw new Error(`Network error: ${res.status}`);
-      const raw = await res.json();
+
+      // Guard against wrong content-type
+      const text = await res.text();
+      const raw = JSON.parse(text);
       const data = Array.isArray(raw) ? raw : [];
 
+      // Ensure demo always populates if everything is past
       const normalized = anyVisible(data) ? data : data.map(shiftRecordToToday);
 
       setReservations(normalized);
@@ -99,7 +123,7 @@ export default function App() {
     return () => clearInterval(t);
   }, []);
 
-  // --- filtering/sorting ------------------------------------------
+  // ---- filtering/sorting ------------------------------------------
   const ongoing = reservations.filter((r) => {
     const start = new Date(r.startTime);
     const end = new Date(r.endTime);
@@ -108,21 +132,19 @@ export default function App() {
 
   const upcoming = reservations.filter((r) => new Date(r.startTime) > now);
 
-  // Only show these remarks on the ONGOING screen
+  // Ongoing shows only Charging/Idling
   const allowedRemarks = new Set(["charging", "idling"]);
   const ongoingAllowed = ongoing.filter((r) =>
     allowedRemarks.has((r.remark || "").toLowerCase())
   );
 
-  // Action required = Idling (but only among allowed ongoing)
+  // Action required = Idling among allowed ongoing
   const actionRequired = ongoingAllowed.filter(
     (r) => (r.remark || "").toLowerCase() === "idling"
   );
 
   const filtered =
-    screen === "ongoing"
-      ? [...actionRequired, ...ongoingAllowed]
-      : upcoming;
+    screen === "ongoing" ? [...actionRequired, ...ongoingAllowed] : upcoming;
 
   const sorted = [...filtered].sort(
     (a, b) => new Date(a.startTime) - new Date(b.startTime)
@@ -130,7 +152,7 @@ export default function App() {
 
   const showTimes = screen !== "ongoing"; // hide Start/End on ongoing screen
 
-  // --- UI ----------------------------------------------------------
+  // ---- UI ----------------------------------------------------------
   return (
     <div
       className="min-h-screen flex flex-col p-8"
@@ -141,19 +163,40 @@ export default function App() {
       }}
     >
       {/* Header */}
-      <header className="flex items-start justify-between mb-8" style={{ marginTop: "64px" }}>
+      <header
+        className="flex items-start justify-between mb-8"
+        style={{ marginTop: "64px" }}
+      >
         <img src="/logo.png" alt="Greenlane Logo" className="h-8 w-auto mt-1" />
         <div className="text-right leading-tight">
           <div className="flex justify-end items-baseline gap-3">
-            <span style={{ fontWeight: "bold", fontSize: "36px", fontFamily: "Geist, sans-serif" }}>
-              {currentTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            <span
+              style={{
+                fontWeight: "bold",
+                fontSize: "36px",
+                fontFamily: "Geist, sans-serif",
+              }}
+            >
+              {currentTime.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             </span>
           </div>
-          <div style={{ fontSize: "14px", color: "#CCCCCC", marginTop: "4px" }}>
+          <div
+            style={{
+              fontSize: "14px",
+              color: "#CCCCCC",
+              marginTop: "4px",
+            }}
+          >
             Last updated:{" "}
             <span style={{ fontWeight: "bold", color: "white" }}>
               {lastUpdated
-                ? lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                ? lastUpdated.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
                 : "—"}
             </span>
           </div>
@@ -161,14 +204,28 @@ export default function App() {
       </header>
 
       {/* Title */}
-      <h2 style={{ fontSize: "32px", fontWeight: "bold", marginBottom: "32px", marginTop: "183px" }}>
+      <h2
+        style={{
+          fontSize: "32px",
+          fontWeight: "bold",
+          marginBottom: "32px",
+          marginTop: "183px",
+        }}
+      >
         {screen === "ongoing" ? "Ongoing Sessions" : "Upcoming Reservations"}
       </h2>
 
-      {/* Action Required Section (only on ongoing, only if any Idling) */}
+      {/* Action Required Section */}
       {screen === "ongoing" && actionRequired.length > 0 && (
         <div className="mb-8">
-          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#02CC02", marginBottom: "12px" }}>
+          <h3
+            style={{
+              fontSize: "24px",
+              fontWeight: "bold",
+              color: "#02CC02",
+              marginBottom: "12px",
+            }}
+          >
             Action Required
           </h3>
           <ul>
@@ -207,21 +264,34 @@ export default function App() {
               {sorted.map((r, i) => {
                 const bgColor = i % 2 === 0 ? "#0D291A" : "#24511D";
                 return (
-                  <tr key={i} style={{ backgroundColor: bgColor, height: "54px", fontSize: "20px" }}>
+                  <tr
+                    key={i}
+                    style={{
+                      backgroundColor: bgColor,
+                      height: "54px",
+                      fontSize: "20px",
+                    }}
+                  >
                     <td className="px-6 py-4">{r.licensePlate || "—"}</td>
 
-                    {/* Hide times on ongoing screen */}
+                    {/* Hide times on ongoing */}
                     {showTimes && (
                       <td className="px-6 py-4">
                         {r.startTime
-                          ? new Date(r.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                          ? new Date(r.startTime).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
                           : "—"}
                       </td>
                     )}
                     {showTimes && (
                       <td className="px-6 py-4">
                         {r.endTime
-                          ? new Date(r.endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                          ? new Date(r.endTime).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
                           : "—"}
                       </td>
                     )}
@@ -255,7 +325,10 @@ export default function App() {
                           <div className="w-32 bg-gray-500 h-2 rounded">
                             <div
                               className="h-2 rounded"
-                              style={{ width: `${r.soc}%`, backgroundColor: "#02CC02" }}
+                              style={{
+                                width: `${r.soc}%`,
+                                backgroundColor: "#02CC02",
+                              }}
                             />
                           </div>
                           <span>{r.soc}%</span>
@@ -271,7 +344,9 @@ export default function App() {
           </table>
         </div>
       ) : (
-        <p className="text-gray-400 mt-20 text-lg text-center">No reservations to display</p>
+        <p className="text-gray-400 mt-20 text-lg text-center">
+          No reservations to display
+        </p>
       )}
     </div>
   );
