@@ -6,7 +6,7 @@ export default function App() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [screen, setScreen] = useState("upcoming"); // "upcoming" | "ongoing"
 
-  // Data URL handling
+  // ---- Data URL handling ----
   const envUrl = (import.meta.env.VITE_API_URL || "").trim();
   const PUBLIC_JSON_URL = `${import.meta.env.BASE_URL}mock-reservations.json`;
   const API_URL = envUrl || PUBLIC_JSON_URL;
@@ -22,63 +22,45 @@ export default function App() {
     }
   }
 
-  // Helpers
+  // ---- Helpers ----
   const now = new Date();
   const pad = (n) => String(n).padStart(2, "0");
   const toLocalISOString = (d) =>
     `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 
-  // Tolerant remark helpers
+  // tolerant remark checks
   const norm = (s) => (s ?? "").toString().trim().toLowerCase();
-  const isIdling = (r) => norm(r.remark).startsWith("idling");
+  const isIdling   = (r) => norm(r.remark).startsWith("idling");
   const isCharging = (r) => norm(r.remark) === "charging";
   const isAllowedRemark = (r) => isCharging(r) || isIdling(r);
 
-  // Shift mock records to *today* preserving hours/durations
-  function shiftRecordToToday(r) {
+  // shift a single past record to today (preserve hours/duration)
+  function normalizeToTodayIfPast(r) {
+    const end = new Date(r.endTime);
+    const nowLocal = new Date();
+    if (end >= nowLocal) return r;
     const s0 = new Date(r.startTime);
     const e0 = new Date(r.endTime);
-    const durationMs = Math.max(0, e0 - s0);
-
-    const today = new Date();
+    const dur = Math.max(0, e0 - s0);
+    const t = new Date();
     const s = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate(),
-      s0.getHours(),
-      s0.getMinutes(),
-      s0.getSeconds(),
-      s0.getMilliseconds()
+      t.getFullYear(), t.getMonth(), t.getDate(),
+      s0.getHours(), s0.getMinutes(), s0.getSeconds(), s0.getMilliseconds()
     );
-    const e = new Date(s.getTime() + durationMs);
-
+    const e = new Date(s.getTime() + dur);
     return { ...r, startTime: toLocalISOString(s), endTime: toLocalISOString(e) };
   }
 
-  function anyVisible(list) {
-    const n = new Date();
-    const hasOngoing = list.some((r) => {
-      const s = new Date(r.startTime);
-      const e = new Date(r.endTime);
-      return s <= n && n <= e;
-    });
-    const hasUpcoming = list.some((r) => new Date(r.startTime) > n);
-    return hasOngoing || hasUpcoming;
-  }
-
+  // ---- Fetch ----
   async function fetchData() {
     try {
       if (!isLikelyValidUrl(API_URL)) throw new Error(`Bad API_URL: "${API_URL}"`);
       const res = await fetch(API_URL, { cache: "no-store" });
       if (!res.ok) throw new Error(`Network error: ${res.status}`);
-
       const text = await res.text();
       const raw = JSON.parse(text);
       const data = Array.isArray(raw) ? raw : [];
-
-      // Shift to today if otherwise nothing would show
-      const normalized = anyVisible(data) ? data : data.map(shiftRecordToToday);
-
+      const normalized = data.map(normalizeToTodayIfPast);
       setReservations(normalized);
       setLastUpdated(new Date());
     } catch (err) {
@@ -105,27 +87,39 @@ export default function App() {
     return () => clearInterval(t);
   }, []);
 
-  // Filtering
+  // ---- Filtering ----
   const ongoingWindow = reservations.filter((r) => {
     const s = new Date(r.startTime);
     const e = new Date(r.endTime);
     return s <= now && now <= e;
   });
-  const ongoingAllowed = ongoingWindow.filter(isAllowedRemark);
 
-  const upcoming = reservations.filter(
-    (r) => new Date(r.startTime) > now && !isAllowedRemark(r)
-  );
+  const ongoingAllowed = ongoingWindow.filter(isAllowedRemark);          // for Ongoing table
+  const idlingNow      = ongoingWindow.filter(isIdling);                 // for Action required (both screens)
 
-  const filtered = screen === "ongoing" ? ongoingAllowed : upcoming;
-  const sorted = [...filtered].sort(
-    (a, b) => new Date(a.startTime) - new Date(b.startTime)
-  );
+  // Upcoming: non Charging/Idling that haven't ended yet (more forgiving)
+  const upcoming = reservations.filter((r) => {
+    const end = new Date(r.endTime);
+    return !isAllowedRemark(r) && end > now;
+  });
 
-  const showTimes = screen !== "ongoing";
-  const showBattery = screen === "ongoing";
+  const mainRows = screen === "ongoing" ? ongoingAllowed : upcoming;
 
-  // Add blink CSS (for Idling rows)
+  // Sort: future-first for upcoming; for ongoing just by startTime
+  const sorted = [...mainRows].sort((a, b) => {
+    const aS = new Date(a.startTime), bS = new Date(b.startTime);
+    if (screen === "upcoming") {
+      const aFuture = aS > now, bFuture = bS > now;
+      if (aFuture !== bFuture) return aFuture ? -1 : 1;
+    }
+    return aS - bS;
+  });
+
+  // ---- Column visibility ----
+  const showTimes   = screen !== "ongoing";  // Ongoing hides Start/End
+  const showBattery = screen === "ongoing";  // Upcoming hides Battery
+
+  // ---- Blink CSS for Idling rows ----
   useEffect(() => {
     const style = document.createElement("style");
     style.innerHTML = `
@@ -133,14 +127,114 @@ export default function App() {
         0%, 100% { background-color: #2A4C1F; }
         50% { background-color: #FFFFFF; color: #0D291A; }
       }
-      .blink-row {
-        animation: blinkRow 3s infinite ease-in-out;
-      }
+      .blink-row { animation: blinkRow 3s infinite ease-in-out; }
     `;
     document.head.appendChild(style);
     return () => document.head.removeChild(style);
   }, []);
 
+  // ---- Reusable table renderers ----
+  const renderHeader = (opts) => (
+    <tr
+      style={{
+        backgroundColor: "#02CC02",
+        color: "#0D291A",
+        height: "54px",
+        fontWeight: "bold",
+        fontSize: "20px",
+      }}
+    >
+      <th className="px-6 py-3 w-[160px] text-left">Vehicle</th>
+      {opts.showTimes && <th className="px-6 py-3 w-[150px] text-left">Start</th>}
+      {opts.showTimes && <th className="px-6 py-3 w-[150px] text-left">End</th>}
+      <th className="px-6 py-3 w-[100px] text-left">Lane</th>
+      <th className="px-6 py-3 w-[300px] text-left">Remark</th>
+      {opts.showBattery && <th className="px-6 py-3 w-[200px] text-left">Battery</th>}
+    </tr>
+  );
+
+  const renderRows = (rows, opts) =>
+    rows.map((r, i) => {
+      const baseColor = i % 2 === 0 ? "#0D291A" : "#24511D";
+      const blink = isIdling(r); // action rows blink too
+      const remarkDisplay = isIdling(r)
+        ? "Idling - ⚠️ Please move your vehicle"
+        : r.remark || "—";
+
+      return (
+        <tr
+          key={`${r.licensePlate}-${r.startTime}-${i}`}
+          className={blink ? "blink-row" : ""}
+          style={{
+            backgroundColor: baseColor,
+            height: "54px",
+            fontSize: "20px",
+            transition: "background-color 0.3s ease",
+          }}
+        >
+          <td className="px-6 py-4 text-left">{r.licensePlate || "—"}</td>
+
+          {opts.showTimes && (
+            <td className="px-6 py-4 text-left">
+              {r.startTime
+                ? new Date(r.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                : "—"}
+            </td>
+          )}
+
+          {opts.showTimes && (
+            <td className="px-6 py-4 text-left">
+              {r.endTime
+                ? new Date(r.endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                : "—"}
+            </td>
+          )}
+
+          <td className="px-6 py-4 text-left">
+            {r.lane ? (
+              <span
+                className="inline-flex items-center justify-center font-semibold"
+                style={{
+                  backgroundColor: "#02CC02",
+                  color: "#0D291A",
+                  width: "47px",
+                  height: "24px",
+                  borderRadius: "10px",
+                  textAlign: "center",
+                  padding: "10px",
+                }}
+              >
+                {r.lane}
+              </span>
+            ) : (
+              "—"
+            )}
+          </td>
+
+          <td className="px-6 py-4 text-left">{remarkDisplay}</td>
+
+          {opts.showBattery && (
+            <td className="px-6 py-4 text-left">
+              {r.soc !== null && r.soc !== undefined ? (
+                <div className="flex items-center gap-3">
+                  <div className="w-32 bg-gray-500 h-2 rounded">
+                    <div
+                      className="h-2 rounded"
+                      style={{ width: `${r.soc}%`, backgroundColor: "#02CC02" }}
+                    />
+                  </div>
+                  <span>{r.soc}%</span>
+                </div>
+              ) : (
+                "—"
+              )}
+            </td>
+          )}
+        </tr>
+      );
+    });
+
+  // ---- UI ----
   return (
     <div
       className="min-h-screen flex flex-col p-8"
@@ -169,113 +263,31 @@ export default function App() {
         {screen === "ongoing" ? "Ongoing Sessions" : "Reservations"}
       </h2>
 
-      {/* Table */}
+      {/* Action required (ALWAYS on top, both screens) */}
+      <div className="mb-8">
+        <h3 className="text-2xl font-bold mb-3" style={{ color: "#F59E0B" }}>Action required</h3>
+        {idlingNow.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="min-w-full border-collapse text-left">
+              <thead>{renderHeader({ showTimes: false, showBattery: true })}</thead>
+              <tbody>{renderRows(idlingNow, { showTimes: false, showBattery: true })}</tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-gray-400">No vehicles require immediate action.</p>
+        )}
+      </div>
+
+      {/* Main table (Ongoing or Upcoming) */}
       {sorted.length > 0 ? (
         <div className="overflow-x-auto">
           <table className="min-w-full border-collapse text-left">
-            <thead>
-              <tr
-                style={{
-                  backgroundColor: "#02CC02",
-                  color: "#0D291A",
-                  height: "54px",
-                  fontWeight: "bold",
-                  fontSize: "20px",
-                }}
-              >
-                <th className="px-6 py-3 w-[160px]">Vehicle</th>
-                {showTimes && <th className="px-6 py-3 w-[150px]">Start</th>}
-                {showTimes && <th className="px-6 py-3 w-[150px]">End</th>}
-                <th className="px-6 py-3 w-[100px]">Lane</th>
-                <th className="px-6 py-3 w-[300px]">Remark</th>
-                {showBattery && <th className="px-6 py-3 w-[200px]">Battery</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {sorted.map((r, i) => {
-                const baseColor = i % 2 === 0 ? "#0D291A" : "#24511D";
-                const blink = screen === "ongoing" && isIdling(r);
-                const remarkDisplay = isIdling(r)
-                  ? "Idling - ⚠️ Please move your vehicle"
-                  : r.remark || "—";
-
-                return (
-                  <tr
-                    key={i}
-                    className={blink ? "blink-row" : ""}
-                    style={{
-                      backgroundColor: baseColor,
-                      height: "54px",
-                      fontSize: "20px",
-                      transition: "background-color 0.3s ease",
-                    }}
-                  >
-                    <td className="px-6 py-4">{r.licensePlate || "—"}</td>
-
-                    {showTimes && (
-                      <td className="px-6 py-4">
-                        {r.startTime
-                          ? new Date(r.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-                          : "—"}
-                      </td>
-                    )}
-
-                    {showTimes && (
-                      <td className="px-6 py-4">
-                        {r.endTime
-                          ? new Date(r.endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-                          : "—"}
-                      </td>
-                    )}
-
-                    <td className="px-6 py-4">
-                      {r.lane ? (
-                        <span
-                          className="inline-flex items-center justify-center font-semibold"
-                          style={{
-                            backgroundColor: "#02CC02",
-                            color: "#0D291A",
-                            width: "47px",
-                            height: "24px",
-                            borderRadius: "10px",
-                            textAlign: "center",
-                            padding: "10px",
-                          }}
-                        >
-                          {r.lane}
-                        </span>
-                      ) : (
-                        "—"
-                      )}
-                    </td>
-
-                    <td className="px-6 py-4">{remarkDisplay}</td>
-
-                    {showBattery && (
-                      <td className="px-6 py-4">
-                        {r.soc !== null && r.soc !== undefined ? (
-                          <div className="flex items-center gap-3">
-                            <div className="w-32 bg-gray-500 h-2 rounded">
-                              <div
-                                className="h-2 rounded"
-                                style={{ width: `${r.soc}%`, backgroundColor: "#02CC02" }}
-                              />
-                            </div>
-                            <span>{r.soc}%</span>
-                          </div>
-                        ) : (
-                          "—"
-                        )}
-                      </td>
-                    )}
-                  </tr>
-                );
-              })}
-            </tbody>
+            <thead>{renderHeader({ showTimes, showBattery })}</thead>
+            <tbody>{renderRows(sorted, { showTimes, showBattery })}</tbody>
           </table>
         </div>
       ) : (
-        <p className="text-gray-400 mt-20 text-lg text-center">No reservations to display</p>
+        <p className="text-gray-400 mt-6 text-lg">No reservations to display</p>
       )}
     </div>
   );
