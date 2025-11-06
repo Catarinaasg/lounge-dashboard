@@ -6,6 +6,7 @@ export default function App() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [screen, setScreen] = useState("upcoming"); // "upcoming" | "ongoing"
 
+  // Data URL handling
   const envUrl = (import.meta.env.VITE_API_URL || "").trim();
   const PUBLIC_JSON_URL = `${import.meta.env.BASE_URL}mock-reservations.json`;
   const API_URL = envUrl || PUBLIC_JSON_URL;
@@ -21,47 +22,37 @@ export default function App() {
     }
   }
 
+  // Helpers
   const now = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  const toLocalISOString = (d) =>
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 
-  function toLocalISOString(d) {
-    const pad = (n) => String(n).padStart(2, "0");
-    return (
-      d.getFullYear() +
-      "-" +
-      pad(d.getMonth() + 1) +
-      "-" +
-      pad(d.getDate()) +
-      "T" +
-      pad(d.getHours()) +
-      ":" +
-      pad(d.getMinutes()) +
-      ":" +
-      pad(d.getSeconds())
-    );
-  }
+  // Tolerant remark helpers
+  const norm = (s) => (s ?? "").toString().trim().toLowerCase();
+  const isIdling = (r) => norm(r.remark).startsWith("idling");
+  const isCharging = (r) => norm(r.remark) === "charging";
+  const isAllowedRemark = (r) => isCharging(r) || isIdling(r);
 
+  // Shift mock records to *today* preserving hours/durations
   function shiftRecordToToday(r) {
-    const startOrig = new Date(r.startTime);
-    const endOrig = new Date(r.endTime);
-    const durationMs = Math.max(0, endOrig - startOrig);
+    const s0 = new Date(r.startTime);
+    const e0 = new Date(r.endTime);
+    const durationMs = Math.max(0, e0 - s0);
 
     const today = new Date();
-    const startShifted = new Date(
+    const s = new Date(
       today.getFullYear(),
       today.getMonth(),
       today.getDate(),
-      startOrig.getHours(),
-      startOrig.getMinutes(),
-      startOrig.getSeconds(),
-      startOrig.getMilliseconds()
+      s0.getHours(),
+      s0.getMinutes(),
+      s0.getSeconds(),
+      s0.getMilliseconds()
     );
-    const endShifted = new Date(startShifted.getTime() + durationMs);
+    const e = new Date(s.getTime() + durationMs);
 
-    return {
-      ...r,
-      startTime: toLocalISOString(startShifted),
-      endTime: toLocalISOString(endShifted),
-    };
+    return { ...r, startTime: toLocalISOString(s), endTime: toLocalISOString(e) };
   }
 
   function anyVisible(list) {
@@ -84,6 +75,8 @@ export default function App() {
       const text = await res.text();
       const raw = JSON.parse(text);
       const data = Array.isArray(raw) ? raw : [];
+
+      // Shift to today if otherwise nothing would show
       const normalized = anyVisible(data) ? data : data.map(shiftRecordToToday);
 
       setReservations(normalized);
@@ -112,10 +105,7 @@ export default function App() {
     return () => clearInterval(t);
   }, []);
 
-  const allowedRemarks = new Set(["charging", "idling"]);
-  const isAllowedRemark = (r) =>
-    allowedRemarks.has((r.remark || "").toLowerCase());
-
+  // Filtering
   const ongoingWindow = reservations.filter((r) => {
     const s = new Date(r.startTime);
     const e = new Date(r.endTime);
@@ -135,7 +125,7 @@ export default function App() {
   const showTimes = screen !== "ongoing";
   const showBattery = screen === "ongoing";
 
-  // ---- Blink keyframes style -------------------------------------
+  // Add blink CSS (for Idling rows)
   useEffect(() => {
     const style = document.createElement("style");
     style.innerHTML = `
@@ -151,15 +141,10 @@ export default function App() {
     return () => document.head.removeChild(style);
   }, []);
 
-  // ---- UI ----------------------------------------------------------
   return (
     <div
       className="min-h-screen flex flex-col p-8"
-      style={{
-        backgroundColor: "#0D291A",
-        fontFamily: "Geist, sans-serif",
-        color: "white",
-      }}
+      style={{ backgroundColor: "#0D291A", fontFamily: "Geist, sans-serif", color: "white" }}
     >
       {/* Header */}
       <header className="flex items-start justify-between mb-8" style={{ marginTop: "32px" }}>
@@ -167,21 +152,13 @@ export default function App() {
         <div className="text-right leading-tight">
           <div className="flex justify-end items-baseline gap-3">
             <span style={{ fontWeight: "bold", fontSize: "36px" }}>
-              {currentTime.toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              {currentTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </span>
           </div>
           <div style={{ fontSize: "14px", color: "#CCCCCC", marginTop: "4px" }}>
             Last updated:{" "}
             <span style={{ fontWeight: "bold", color: "white" }}>
-              {lastUpdated
-                ? lastUpdated.toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                : "—"}
+              {lastUpdated ? lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}
             </span>
           </div>
         </div>
@@ -217,18 +194,15 @@ export default function App() {
             <tbody>
               {sorted.map((r, i) => {
                 const baseColor = i % 2 === 0 ? "#0D291A" : "#24511D";
-                const remarkLower = (r.remark || "").toLowerCase();
-                const isBlink =
-                  screen === "ongoing" && remarkLower === "idling";
-                const remarkDisplay =
-                  remarkLower === "idling"
-                    ? "Idling - ⚠️ Please move your vehicle"
-                    : r.remark || "—";
+                const blink = screen === "ongoing" && isIdling(r);
+                const remarkDisplay = isIdling(r)
+                  ? "Idling - Please move your vehicle"
+                  : r.remark || "—";
 
                 return (
                   <tr
                     key={i}
-                    className={isBlink ? "blink-row" : ""}
+                    className={blink ? "blink-row" : ""}
                     style={{
                       backgroundColor: baseColor,
                       height: "54px",
@@ -241,10 +215,7 @@ export default function App() {
                     {showTimes && (
                       <td className="px-6 py-4">
                         {r.startTime
-                          ? new Date(r.startTime).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
+                          ? new Date(r.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
                           : "—"}
                       </td>
                     )}
@@ -252,10 +223,7 @@ export default function App() {
                     {showTimes && (
                       <td className="px-6 py-4">
                         {r.endTime
-                          ? new Date(r.endTime).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
+                          ? new Date(r.endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
                           : "—"}
                       </td>
                     )}
@@ -290,10 +258,7 @@ export default function App() {
                             <div className="w-32 bg-gray-500 h-2 rounded">
                               <div
                                 className="h-2 rounded"
-                                style={{
-                                  width: `${r.soc}%`,
-                                  backgroundColor: "#02CC02",
-                                }}
+                                style={{ width: `${r.soc}%`, backgroundColor: "#02CC02" }}
                               />
                             </div>
                             <span>{r.soc}%</span>
@@ -310,9 +275,7 @@ export default function App() {
           </table>
         </div>
       ) : (
-        <p className="text-gray-400 mt-20 text-lg text-center">
-          No reservations to display
-        </p>
+        <p className="text-gray-400 mt-20 text-lg text-center">No reservations to display</p>
       )}
     </div>
   );
