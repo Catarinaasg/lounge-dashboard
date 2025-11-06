@@ -123,36 +123,27 @@ export default function App() {
   const isAllowedRemark = (r) =>
     allowedRemarks.has((r.remark || "").toLowerCase());
 
-  // Ongoing (time-window)
+  // Ongoing (time-window + allowed remark)
   const ongoingWindow = reservations.filter((r) => {
     const s = new Date(r.startTime);
     const e = new Date(r.endTime);
     return s <= now && now <= e;
   });
-
-  // Ongoing screen shows only Charging/Idling
   const ongoingAllowed = ongoingWindow.filter(isAllowedRemark);
-
-  // Action required = Idling among allowed ongoing
-  const actionRequired = ongoingAllowed.filter(
-    (r) => (r.remark || "").toLowerCase() === "idling"
-  );
 
   // Upcoming: future only, and NOT Charging/Idling
   const upcoming = reservations.filter(
     (r) => new Date(r.startTime) > now && !isAllowedRemark(r)
   );
 
-  const filtered =
-    screen === "ongoing" ? [...actionRequired, ...ongoingAllowed] : upcoming;
-
+  const filtered = screen === "ongoing" ? ongoingAllowed : upcoming;
   const sorted = [...filtered].sort(
     (a, b) => new Date(a.startTime) - new Date(b.startTime)
   );
 
-  // Visibility flags
-  const showTimes = screen !== "ongoing"; // hide Start/End on ongoing
-  const showBattery = screen === "ongoing"; // hide Battery on upcoming
+  // Column visibility
+  const showTimes = screen !== "ongoing";
+  const showBattery = screen === "ongoing";
 
   // ---- UI ----------------------------------------------------------
   return (
@@ -211,34 +202,11 @@ export default function App() {
           fontSize: "32px",
           fontWeight: "bold",
           marginBottom: "24px",
-          marginTop: "24px", // updated from 183px
+          marginTop: "24px",
         }}
       >
         {screen === "ongoing" ? "Ongoing Sessions" : "Upcoming Reservations"}
       </h2>
-
-      {/* Action Required */}
-      {screen === "ongoing" && actionRequired.length > 0 && (
-        <div className="mb-8">
-          <h3
-            style={{
-              fontSize: "24px",
-              fontWeight: "bold",
-              color: "#02CC02",
-              marginBottom: "12px",
-            }}
-          >
-            Action Required
-          </h3>
-          <ul>
-            {actionRequired.map((r, i) => (
-              <li key={i} className="text-lg">
-                Vehicle {r.licensePlate} at Lane {r.lane ?? "—"} — {r.remark}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
 
       {/* Table */}
       {sorted.length > 0 ? (
@@ -265,6 +233,12 @@ export default function App() {
             <tbody>
               {sorted.map((r, i) => {
                 const bgColor = i % 2 === 0 ? "#0D291A" : "#24511D";
+                const remarkLower = (r.remark || "").toLowerCase();
+                const remarkDisplay =
+                  remarkLower === "idling"
+                    ? "Idling - Please move your vehicle"
+                    : r.remark || "—";
+
                 return (
                   <tr
                     key={i}
@@ -274,10 +248,8 @@ export default function App() {
                       fontSize: "20px",
                     }}
                   >
-                    {/* Vehicle */}
                     <td className="px-6 py-4">{r.licensePlate || "—"}</td>
 
-                    {/* Start */}
                     {showTimes && (
                       <td className="px-6 py-4">
                         {r.startTime
@@ -289,7 +261,6 @@ export default function App() {
                       </td>
                     )}
 
-                    {/* End */}
                     {showTimes && (
                       <td className="px-6 py-4">
                         {r.endTime
@@ -301,7 +272,6 @@ export default function App() {
                       </td>
                     )}
 
-                    {/* Lane */}
                     <td className="px-6 py-4">
                       {r.lane ? (
                         <span
@@ -323,27 +293,29 @@ export default function App() {
                       )}
                     </td>
 
-                    {/* Remark */}
-                    <td className="px-6 py-4">{r.remark || "—"}</td>
+                    {/* Remark with inline warning */}
+                    <td className="px-6 py-4">{remarkDisplay}</td>
 
-                    {/* Battery (always output a <td>, but empty on upcoming) */}
-                    <td className="px-6 py-4" style={{ display: showBattery ? undefined : "none" }}>
-                      {showBattery ? (
-                        r.soc !== null && r.soc !== undefined ? (
+                    {showBattery && (
+                      <td className="px-6 py-4">
+                        {r.soc !== null && r.soc !== undefined ? (
                           <div className="flex items-center justify-center gap-2">
                             <div className="w-32 bg-gray-500 h-2 rounded">
                               <div
                                 className="h-2 rounded"
-                                style={{ width: `${r.soc}%`, backgroundColor: "#02CC02" }}
+                                style={{
+                                  width: `${r.soc}%`,
+                                  backgroundColor: "#02CC02",
+                                }}
                               />
                             </div>
                             <span>{r.soc}%</span>
                           </div>
                         ) : (
                           "—"
-                        )
-                      ) : null}
-                    </td>
+                        )}
+                      </td>
+                    )}
                   </tr>
                 );
               })}
