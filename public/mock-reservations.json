@@ -8,6 +8,14 @@
     "soc": 97
   },
   {
+    "licensePlate": "3RTJ6143",
+    "startTime": "2025-10-17T06:00:00",
+    "endTime": "2025-10-17T23:30:00",
+    "lane": "41",
+    "remark": "Idling",
+    "soc": 95
+  },
+  {
     "licensePlate": "1IRY493",
     "startTime": "2025-10-17T09:15:00",
     "endTime": "2025-10-17T11:45:00",
