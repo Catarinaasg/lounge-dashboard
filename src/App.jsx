@@ -222,7 +222,7 @@ export default function App() {
                   screen === "ongoing" && remarkLower === "idling";
                 const remarkDisplay =
                   remarkLower === "idling"
-                    ? "Idling - Please move your vehicle"
+                    ? "Idling - ⚠️ Please move your vehicle"
                     : r.remark || "—";
 
                 return (
