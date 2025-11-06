@@ -131,7 +131,7 @@ export default function App() {
     style.innerHTML = `
       @keyframes blinkRow {
         0%, 100% { background-color: #2A4C1F; }
-        50% { background-color: #F59E0B; color: #0D291A; }
+        50% { background-color: #FFFFFF; color: #0D291A; }
       }
       .blink-row {
         animation: blinkRow 3s infinite ease-in-out;
@@ -166,7 +166,7 @@ export default function App() {
 
       {/* Title */}
       <h2 className="text-3xl font-bold mb-6 mt-6">
-        {screen === "ongoing" ? "Ongoing Sessions" : "Upcoming Reservations"}
+        {screen === "ongoing" ? "Ongoing Sessions" : "Reservations"}
       </h2>
 
       {/* Table */}
@@ -196,7 +196,7 @@ export default function App() {
                 const baseColor = i % 2 === 0 ? "#0D291A" : "#24511D";
                 const blink = screen === "ongoing" && isIdling(r);
                 const remarkDisplay = isIdling(r)
-                  ? "Idling - Please move your vehicle"
+                  ? "Idling - ⚠️ Please move your vehicle"
                   : r.remark || "—";
 
                 return (
