@@ -94,18 +94,18 @@ export default function App() {
     return s <= now && now <= e;
   });
 
-  const ongoingAllowed = ongoingWindow.filter(isAllowedRemark);          // for Ongoing table
-  const idlingNow      = ongoingWindow.filter(isIdling);                 // for Action required (both screens)
+  const ongoingChargingOnly = ongoingWindow.filter(isCharging); // Ongoing table shows ONLY charging
+  const idlingNow           = ongoingWindow.filter(isIdling);   // Action required (both screens)
 
-  // Upcoming: non Charging/Idling that haven't ended yet (more forgiving)
+  // Reservations (upcoming): non Charging/Idling that haven't ended yet
   const upcoming = reservations.filter((r) => {
     const end = new Date(r.endTime);
     return !isAllowedRemark(r) && end > now;
   });
 
-  const mainRows = screen === "ongoing" ? ongoingAllowed : upcoming;
+  const mainRows = screen === "ongoing" ? ongoingChargingOnly : upcoming;
 
-  // Sort: future-first for upcoming; for ongoing just by startTime
+  // Sort: future-first for Reservations; for Ongoing just by startTime
   const sorted = [...mainRows].sort((a, b) => {
     const aS = new Date(a.startTime), bS = new Date(b.startTime);
     if (screen === "upcoming") {
@@ -117,7 +117,7 @@ export default function App() {
 
   // ---- Column visibility ----
   const showTimes   = screen !== "ongoing";  // Ongoing hides Start/End
-  const showBattery = screen === "ongoing";  // Upcoming hides Battery
+  const showBattery = screen === "ongoing";  // Reservations hide Battery
 
   // ---- Blink CSS for Idling rows ----
   useEffect(() => {
@@ -156,7 +156,7 @@ export default function App() {
   const renderRows = (rows, opts) =>
     rows.map((r, i) => {
       const baseColor = i % 2 === 0 ? "#0D291A" : "#24511D";
-      const blink = isIdling(r); // action rows blink too
+      const blink = isIdling(r); // idling rows blink (in Action required)
       const remarkDisplay = isIdling(r)
         ? "Idling - ⚠️ Please move your vehicle"
         : r.remark || "—";
@@ -258,14 +258,16 @@ export default function App() {
         </div>
       </header>
 
-      {/* Title */}
+      {/* Page Title */}
       <h2 className="text-3xl font-bold mb-6 mt-6">
         {screen === "ongoing" ? "Ongoing Sessions" : "Reservations"}
       </h2>
 
       {/* Action required (ALWAYS on top, both screens) */}
       <div className="mb-8">
-        <h3 className="text-2xl font-bold mb-3" style={{ color: "#F59E0B" }}>Action required</h3>
+        <h3 className="text-2xl font-bold mb-3" style={{ color: "#FFFFFF" }}>
+          Action required
+        </h3>
         {idlingNow.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="min-w-full border-collapse text-left">
@@ -278,7 +280,13 @@ export default function App() {
         )}
       </div>
 
-      {/* Main table (Ongoing or Upcoming) */}
+      {/* Section title per screen, then main table */}
+      <div className="mb-3">
+        <h3 className="text-2xl font-bold">
+          {screen === "ongoing" ? "Ongoing sessions" : "Reservations"}
+        </h3>
+      </div>
+
       {sorted.length > 0 ? (
         <div className="overflow-x-auto">
           <table className="min-w-full border-collapse text-left">
