@@ -94,7 +94,7 @@ export default function App() {
     return s <= now && now <= e;
   });
 
-  const ongoingChargingOnly = ongoingWindow.filter(isCharging); // Ongoing table shows ONLY charging
+  const ongoingChargingOnly = ongoingWindow.filter(isCharging); // Ongoing main table: ONLY Charging
   const idlingNow           = ongoingWindow.filter(isIdling);   // Action required (both screens)
 
   // Reservations (upcoming): non Charging/Idling that haven't ended yet
@@ -119,7 +119,7 @@ export default function App() {
   const showTimes   = screen !== "ongoing";  // Ongoing hides Start/End
   const showBattery = screen === "ongoing";  // Reservations hide Battery
 
-  // ---- Blink CSS for Idling rows ----
+  // ---- Blink CSS for Idling rows (Action required table) ----
   useEffect(() => {
     const style = document.createElement("style");
     style.innerHTML = `
@@ -156,7 +156,7 @@ export default function App() {
   const renderRows = (rows, opts) =>
     rows.map((r, i) => {
       const baseColor = i % 2 === 0 ? "#0D291A" : "#24511D";
-      const blink = isIdling(r); // idling rows blink (in Action required)
+      const blink = isIdling(r); // used in Action required table (idling rows)
       const remarkDisplay = isIdling(r)
         ? "Idling - ⚠️ Please move your vehicle"
         : r.remark || "—";
@@ -258,10 +258,7 @@ export default function App() {
         </div>
       </header>
 
-      {/* Page Title */}
-      <h2 className="text-3xl font-bold mb-6 mt-6">
-        {screen === "ongoing" ? "Ongoing Sessions" : "Reservations"}
-      </h2>
+      {/* --------- NO page title here (to avoid duplicate “Reservations”) --------- */}
 
       {/* Action required (ALWAYS on top, both screens) */}
       <div className="mb-8">
